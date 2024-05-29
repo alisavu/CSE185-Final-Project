@@ -1,6 +1,6 @@
-# CSE185-Final-Project
+# Aligner
 
-This project is impmlementing the alignment tool, which is expected to have very similar outputs as the bwa mem aligner. This aligner uses the Burrows-Wheeler Transform for reversible data compression.
+`aligner` is a Python package that maps DNA sequences against a larger reference genome. It sequences reads that may contain insertions, deletions, or mutations so that the entire read doesn't need to be an exact match to a portion of the genome. This tool will compare to the `bwa mem` aligner algorithm that we used in Lab 1. \
 
-To open help menu: ./bwa_mem.py --help\
-Usage: bwa mem <idxbase> <in1.fq> <in2.fq>
+To open help menu: python aligner.py --help\
+usage: aligner [-h] [-o FILE] [-f FILE] idxbase in1.fq in2.fq
