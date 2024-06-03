@@ -4,3 +4,5 @@
 
 To open help menu: python aligner.py --help\
 usage: aligner [-h] [-o FILE] [-A INT] [-B INT] [-O INT] idxbase in1.fq in2.fq
+
+## Installation
