@@ -7,12 +7,20 @@ You can install the aligner package via pip:
 ```
 pip install git+https://github.com/alisavu/CSE185-Final-Project
 ```
-If the insstall was successful, the aligner help message should be shown via:
+If the install was successful, the aligner help message should be shown via:
 ```
 aligner -h
 ```
 
 ## Basic Usage
 ```
-aligner [-h] [-o FILE] [-A INT] [-B INT] [-O INT] idxbase in1.fq in2.fq
+aligner [-h] [-o FILE] [-A INT] [-B INT] [-O INT] fasta fastq
 ```
+
+## Command Line Arguments
+- `fasta`: fasta file of reference genome
+- `fastq`: fastq file of reads
+- `-o`, `--out`: output results to file
+- `-A`, `--match`: score for a sequence match
+- `-B`, `--mismatch`: score for a mismatch
+- `-O`, `--indel`: score for an indel 

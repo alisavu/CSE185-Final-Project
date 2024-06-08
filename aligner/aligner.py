@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 import argparse
-from typing import Tuple
-#read reads from fastq file
-#for each read find max score against ref genome
-#output alignments in sam file
+from typing import Tuple, List
 
-def get_reads(file):
+def get_reads(file: str) -> List[str]:
     reads = []
     with open(file) as fastq:
         for line in fastq:
@@ -13,10 +10,6 @@ def get_reads(file):
             reads.append(line)
     return reads
 
-# find local alignment between each read in fastq file & reference genome in fasta file
-"""Input: A match reward, a mismatch penalty, an indel penalty, & 2 nucleotide strings
-    Output: The maximum score of a local alignment of two strings, followed by a local
-            alignment of these strings achieving the maximum score."""
 def local_alignment(match_reward: int, mismatch_penalty: int, indel_penalty: int,
                     s: str, t: str) -> Tuple[int, str, str]:
     score = []
@@ -25,8 +18,8 @@ def local_alignment(match_reward: int, mismatch_penalty: int, indel_penalty: int
         score.append(column)
         
     max_score = 0
-    max_s = 0
-    max_t = 0
+    max_i, max_j = 0, 0
+
     for i in range(1, len(s) + 1):
         for j in range(1, len(t) + 1):
             if s[i - 1] == t[j - 1]:
@@ -38,13 +31,10 @@ def local_alignment(match_reward: int, mismatch_penalty: int, indel_penalty: int
             score[i][j] = max(0, match_mismatch, deletion, insertion)
             if score[i][j] > max_score:
                 max_score = score[i][j]
-                max_s =  i
-                max_t = j
-    
-    s_alignment = ''
-    t_alignment = ''
-    i = max_s
-    j = max_t
+                max_i, max_j = i, j
+
+    s_alignment, t_alignment = '', ''
+    i, j = max_i, max_j
     while i > 0 and j > 0 and score[i][j] > 0:
         if s[i - 1] == t[j - 1]:
             match_mismatch = score[i - 1][j - 1] + match_reward
@@ -62,57 +52,51 @@ def local_alignment(match_reward: int, mismatch_penalty: int, indel_penalty: int
         else:
             s_alignment = '-' + s_alignment
             t_alignment = t[j - 1] + t_alignment
-            j -= 1  
-    return max_score
+            j -= 1
 
-#output: [read: best alignment]
-def get_alignments(file, match, mismatch, indel):
+    return max_score, s_alignment, t_alignment
+
+def get_alignments(fq: str, fa: str, match: int, mismatch: int, indel: int):
+    reads = get_reads(fq)
     genome = ""
-    reads = get_reads(file)
-    read_lengths = []
-    read_scores = []
-    best_alignment = {}
-    #get read length
-    for i in reads:
-        length = len(i)
-        read_lengths.append(length)
-    with open(file) as fasta:
+    with open(fa) as fasta:
         for line in fasta:
-            if line.startswith() == False:
-                genome += line
-    for i in genome:
-        for j in read_lengths:
-            window = genome[i:i+j]
-            local_alignment = local_alignment(10, 10, 10, window, reads[j])
-            read_scores.append(local_alignment)
-            #compare prev w current local alignments, take max score
-        for score in read_scores:
-            max_local_score = float('-inf')
-            if score > max_local_score:
-                score = max_local_score     
-    return local_alignment
+            if not line.startswith(">"):
+                genome += line.strip()
 
-def main(): 
+    best_alignments = {}
+    for read in reads:
+        max_local_score = float('-inf')
+        best_alignment = (0, "", "")
+        for i in range(len(genome) - len(read) + 1):
+            window = genome[i:i+len(read)]
+            alignment = local_alignment(match, mismatch, indel, window, read)
+            if alignment[0] > max_local_score:
+                max_local_score = alignment[0]
+                best_alignment = alignment
+        best_alignments[read] = best_alignment
+    return best_alignments
+
+def main():
     parser = argparse.ArgumentParser(
         prog="aligner",
         description="Command-line script to perform alignments of fastq files"
     )
+
+    parser.add_argument("-fa", "--fasta", help="index reference genome file", type=str, required=True)
+    parser.add_argument("-fq", "--fastq", help="input fastq file", type=str, required=True)
+    parser.add_argument("-o", "--out", help="output file to write results to", type=str, default="output.sam")
+    parser.add_argument("-A", "--match", help="score for a sequence match", type=int, default=1)
+    parser.add_argument("-B", "--mismatch", help="penalty for a mismatch", type=int, default=-1)
+    parser.add_argument("-O", "--indel", help="penalty for insertions and deletions", type=int, default=-1)
     
-    # required arguments
-    parser.add_argument("idxbase", help="index reference genome file", type=str)
-    parser.add_argument("in1.fq", help="input fastq file 1", type=str)
-    parser.add_argument("in2.fq", help="input fastq file 2", type=str)    
-    
-    # optional arguments
-    parser.add_argument("-o", "--out", help="sam file to output results to [stdout]" \
-        "Default: stdout", type=str, metavar="FILE", required=False)
-    parser.add_argument("-A", help="score for a sequence match", metavar="INT",
-                        type=int, required=False)
-    parser.add_argument("-B", help="penalty for a mismatch", metavar="INT",
-                        type=int, required=False)
-    parser.add_argument("-O", help="penalties for deletions and insertions", 
-                        metavar="INT", type=int, required=False)
     args = parser.parse_args()
-    
+
+    alignments = get_alignments(args.fastq, args.fasta, args.match, args.mismatch, args.indel)
+
+    with open(args.out, 'w') as out_file:
+        for read, alignment in alignments.items():
+            out_file.write(f"{read}\t{alignment}\n")
+
 if __name__ == "__main__":
     main()
