@@ -85,7 +85,7 @@ def main():
 
     parser.add_argument("-fa", "--fasta", help="index reference genome file", type=str, required=True)
     parser.add_argument("-fq", "--fastq", help="input fastq file", type=str, required=True)
-    parser.add_argument("-o", "--out", help="output file to write results to", type=str, default="output.sam")
+    parser.add_argument("-o", "--out", help="output file to write results to", type=str, default="output.sam", required=False)
     parser.add_argument("-A", "--match", help="score for a sequence match", type=int, default=1)
     parser.add_argument("-B", "--mismatch", help="penalty for a mismatch", type=int, default=-1)
     parser.add_argument("-O", "--indel", help="penalty for insertions and deletions", type=int, default=-1)

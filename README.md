@@ -18,9 +18,9 @@ aligner [-h] [-o FILE] [-A INT] [-B INT] [-O INT] fasta fastq
 ```
 
 ## Command Line Arguments
-- `fasta`: fasta file of reference genome
-- `fastq`: fastq file of reads
-- `-o`, `--out`: output results to file
-- `-A`, `--match`: score for a sequence match
-- `-B`, `--mismatch`: score for a mismatch
-- `-O`, `--indel`: score for an indel 
+- `fa`: fasta file of reference genome (required)
+- `fq`: fastq file of reads (required)
+- `-o`, `--out`: output results to file (optional)
+- `-A`, `--match`: score for a sequence match (optional)
+- `-B`, `--mismatch`: score for a mismatch (optional)
+- `-O`, `--indel`: score for an indel (optional)
